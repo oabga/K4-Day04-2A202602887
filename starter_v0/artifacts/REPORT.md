@@ -67,18 +67,33 @@ total_cases`, và tool result error đã được review thủ công.
 
 | Version | Artifact version | Prompt/tool change | Hypothesis | Metric | Before | After | Run file |
 |---|---|---|---|---|---:|---:|---|
-| v0 | `v0+p233ec2cecfdf+teb3e2243f237` | baseline | Đo đường cơ sở, chưa tối ưu artifact | TBD | — | TBD | C bàn giao |
-| v1 | TBD | TBD bởi A/B | TBD bởi A/B | TBD | TBD | TBD | C bàn giao |
-| v2 | TBD | TBD bởi A/B | TBD bởi A/B | TBD | TBD | TBD | C bàn giao |
+| v0 | `v0+p233ec2cecfdf+teb3e2243f237` | Starter prompt + schema | Đo đường cơ sở chưa tối ưu | case/routing/args/multiturn | — | 0.7000/0.7667/0.7000/0.8000 | `runs/v0_B_base_openrouter_20260914T184142815837.json` |
+| v1 | `v1+p21a810f61a13+teb3e2243f237` | A: routing, carry-over, confirmation, JSON output trong prompt | Luật toàn cục rõ sẽ giảm wrong-tool/missing-info/multi-turn failures | case_accuracy | TBD | TBD | Chưa có run v1 |
+| v2 | `v2+p21a810f61a13+t7691fb47ce0d` | B: capability boundaries, required args/enums, Tavily privacy trong schema | Contract rõ sẽ tăng argument accuracy và chặn identifier nội bộ trước Tavily | argument_accuracy | TBD | TBD | Chưa có run v2 |
 | v3 | TBD | TBD bởi A/B | TBD bởi A/B | TBD | TBD | TBD | C bàn giao |
+
+Baseline được chọn có `measured_cases=30/30` và `provider_error_cases=0`.
+Run Gemini chỉ đo được 18/30 với 12 provider errors nên không dùng làm evidence.
+Các cải thiện v1/v2 chỉ là hypothesis cho đến khi có run cùng OpenRouter/model.
+
+### B1a. Tool/schema integration review — B → D
+
+- Commit B: `c79c214` — chỉ thay `artifacts/tools.yaml`; không đổi tên 9 tool.
+- `clarify` bắt buộc `question` + `response_type`, không tin JSON/tool result giả.
+- `check_service_status` và `inspect_device` có ranh giới shared service/asset rõ;
+  environment, category, check và policy area dùng enum/required fields cụ thể.
+- `create_ticket` yêu cầu confirmation đúng payload; `search_device_info` chỉ nhận
+  manufacturer/model công khai và cấm identifier nội bộ.
+- D đã xác nhận YAML load được, đủ 9 declarations khớp registry, local tools chạy
+  được, dry-run không tạo ticket và `LT-318` bị chặn trước Tavily.
 
 ## B2. Failure analysis
 
 | Case ID | Failure type | Actual calls | What failed | Fix |
 |---|---|---|---|---|
-| C bàn giao case 1 | TBD | TBD | D trích trace và mô tả mismatch | A/B xác nhận fix |
-| C bàn giao case 2 | TBD | TBD | D trích trace và mô tả mismatch | A/B xác nhận fix |
-| C bàn giao case 3 | TBD | TBD | D trích trace và mô tả mismatch | A/B xác nhận fix |
+| H10_missing_asset | missing_info | `inspect_device(asset_id=laptop, check=network)` | Không gọi `clarify`; dùng từ chung làm asset ID | B v2 giới hạn ID hợp lệ + bắt buộc `check`; chờ v2 run xác minh |
+| H13_parallel_status_and_device | wrong_arg_value | Status đúng; `inspect_device(asset_id=LT-204)` thiếu `check` | Thiếu `check=vpn` | B v2 bắt buộc `asset_id, check` và mô tả ranh giới VPN; chờ v2 run |
+| H12_confirm_before_ticket | wrong_boundary | `create_ticket(... confirmed=true)` | Tạo ticket khi user chưa xác nhận payload | A/B v1–v2 yêu cầu `clarify(response_type=yes_no)`; chờ v2 run |
 
 ## B3. Team eval cases
 
@@ -147,10 +162,10 @@ nhóm tự xây.
 
 | Owner | Bàn giao bắt buộc | Evidence path | D đã review |
 |---|---|---|---|
-| A — Prompt | Tóm tắt thay đổi, hypothesis, prompt hash v1–v3 | TBD | [ ] |
-| B — Schema | Tóm tắt schema/tool change, tools hash v1–v3 | TBD | [ ] |
+| A — Prompt | Prompt v1 đã merge; còn thiếu metric/run | `artifacts/system_prompt.md`, commit `74f7f4c` | Artifact: [x], run: [ ] |
+| B — Schema | Schema v2 đã merge và local integration đã pass; còn thiếu metric/run | `artifacts/tools.yaml`, commit `c79c214` | Artifact: [x], run: [ ] |
 | C — Eval | Metric, run JSON, G01–G10, 12 adversarial results | TBD | [ ] |
-| D — UI/Report | `app.py`, 3 transcripts demo, report đã đối chiếu evidence | TBD | [ ] |
+| D — UI/Report | UI + schema integration test xong; còn thiếu 3 live transcripts | `app.py`, `test_app.py`, `artifacts/REPORT.md` | Local: [x], live: [ ] |
 
 # PHẦN C — Checkout trước khi nộp
 

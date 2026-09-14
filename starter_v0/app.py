@@ -76,7 +76,7 @@ def main() -> None:
 
     provider = make_provider(PROVIDER_NAME)
     default_model = getattr(provider, 'default_model', 'openai/gpt-4o-mini')
-    version = st.sidebar.text_input('Artifact version', value='v0').strip() or 'v0'
+    version = st.sidebar.text_input('Artifact version', value='v2').strip() or 'v2'
     model = st.sidebar.text_input('OpenRouter model', value=default_model).strip() or default_model
     artifact = build_artifact_version(version, SYSTEM_PROMPT_PATH, TOOLS_PATH)
     config = (artifact.artifact_version, model)
