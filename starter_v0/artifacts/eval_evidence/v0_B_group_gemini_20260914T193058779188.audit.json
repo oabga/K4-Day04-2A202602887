@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-09-14T12:30:58.803210+00:00",
+  "interval_seconds": 15.0,
+  "run_file": "v0_B_group_gemini_20260914T193058779188.json",
+  "suite": "group",
+  "tickets": [
+    {
+      "case_id": "G10",
+      "ticket_id": "LAB-8B3358E1",
+      "file_existed": true,
+      "payload_matches_args": true
+    }
+  ],
+  "temporary_ticket_count": 1,
+  "temporary_directory_removed": true
+}
