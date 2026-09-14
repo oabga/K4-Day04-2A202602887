@@ -132,7 +132,11 @@ tools:
     description: >
       Look up one employee in the internal directory by employee ID. Returns
       account/MFA status and assigned asset IDs, never passwords or tokens.
-      Use when the user provides an employee ID. Do not use for policy
+      Use when the user provides an employee ID. A request for the account
+      plus assigned devices still needs exactly one call: assigned asset IDs
+      are already in the directory result. Never call this tool twice with
+      the same employee_id in one turn. Do not follow with inspect_device unless the
+      user also gave a specific asset ID to diagnose. Do not use for policy
       questions about MFA/passwords (use policy), how-to account steps (use
       search_kb), or device diagnostics (use inspect_device with an asset ID).
       A name, role, or department without an ID is not enough — use clarify.
