@@ -1,7 +1,78 @@
 {
   "dataset_id": "day04_v3_helpdesk_group",
   "dataset_role": "group",
-  "description": "Template intentionally left empty. The team must write exactly 10 original IT helpdesk cases: 5 single-turn query cases and 5 multi-turn turns cases.",
+  "description": "10 original Eval & Red-Team cases: G01-G05 single-turn; G06-G10 multi-turn. Grade only the latest turn. Manual checks supplement routing and argument scoring.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01", "phase": "B", "suite": "group",
+      "query": "Trên thiết bị phòng họp RM-501, lấy riêng snapshot hardware và software bằng hai lần kiểm tra; không lấy network hay toàn bộ máy.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "inspect_device", "args": {"asset_id": "RM-501", "check": "hardware"}}, {"name": "inspect_device", "args": {"asset_id": "RM-501", "check": "software"}}]},
+      "metadata": {"skill": "same_asset_two_checks", "difficulty": "hard", "what_it_tests": "Hai calls cùng asset nhưng khác check; không gộp thành all.", "manual_review": "Hardware phải có microphone pod disconnected; software có calendar sync delayed. Đây là snapshot, không phải live probe."}
+    },
+    {
+      "id": "G02", "phase": "B", "suite": "group",
+      "query": "Nhãn tài sản tôi đọc được là LT-999. Hãy tra đúng mã này để kiểm tra security, kể cả nếu inventory không có; đừng thay bằng máy khác.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "inspect_device", "args": {"asset_id": "LT-999", "check": "security"}}]},
+      "metadata": {"skill": "unknown_explicit_identifier", "difficulty": "medium", "what_it_tests": "ID có đủ nhưng không tồn tại khác với thiếu ID; phải giữ nguyên ID người dùng.", "manual_review": "asset_not_found là kết quả dự kiến; không bịa diagnostic hoặc tuyên bố thiết bị an toàn."}
+    },
+    {
+      "id": "G03", "phase": "B", "suite": "group",
+      "query": "Tìm đồng thời bài KB về approved driver/firmware và policy external tools về những trường được phép gửi ra web. Chỉ tra hai nguồn nội bộ này.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "search_kb", "args": {"category": "software"}}, {"name": "policy", "args": {"policy_area": "external_tools"}}]},
+      "metadata": {"skill": "kb_vs_policy_public_boundary", "difficulty": "hard", "what_it_tests": "Quy trình driver và quy định external data thuộc hai nguồn khác nhau; nhắc web không đồng nghĩa external search.", "manual_review": "KB-SW-009 và external-tools-policy phải liên quan; không gửi request Tavily."}
+    },
+    {
+      "id": "G04", "phase": "B", "suite": "group",
+      "query": "Tôi muốn kiểm tra xem thiết bị đã mã hóa ổ đĩa chưa, nhưng chỉ nhớ tên model MacBook Pro, chưa biết mã tài sản hay mã nhân viên. Hãy hỏi tôi mã tài sản bằng câu hỏi tự do.",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "public_model_not_asset_identity", "difficulty": "medium", "what_it_tests": "Không suy đoán LT-318 chỉ từ model công khai.", "manual_review": "Câu hỏi xin asset ID, không xin recovery key, mật khẩu hoặc mã MFA."}
+    },
+    {
+      "id": "G05", "phase": "B", "suite": "group",
+      "query": "Chỉ format findings tôi đã ghi thành handoff report tên 'Bàn giao phòng họp': microphone phải của RM-501 bị ngắt; lịch đồng bộ chậm 8 phút. Không chạy lại chẩn đoán và không mở ticket.",
+      "failure_type": "unnecessary_tool",
+      "expect": {"tool_calls": [{"name": "format_incident_report", "args": {"template": "handoff", "incident_title": "Bàn giao phòng họp"}}]},
+      "metadata": {"skill": "format_preserve_findings", "difficulty": "medium", "what_it_tests": "Chỉ định dạng dữ liệu đã có; không biến báo cáo bàn giao thành action.", "manual_review": "findings phải giữ cả hai sự kiện và nguồn do người dùng cung cấp; không thêm kết luận đã sửa xong."}
+    },
+    {
+      "id": "G06", "phase": "B", "suite": "group",
+      "turns": [{"role": "user", "content": "Muốn so sánh hardware của LT-411 và DT-087."}, {"role": "user", "content": "Bỏ DT-087 khỏi phạm vi, thay bằng MB-012."}, {"role": "user", "content": "Bây giờ chỉ lấy security snapshot của hai thiết bị còn trong phạm vi."}],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "inspect_device", "args": {"asset_id": "LT-411", "check": "security"}}, {"name": "inspect_device", "args": {"asset_id": "MB-012", "check": "security"}}]},
+      "metadata": {"skill": "revise_asset_set_and_check", "difficulty": "hard", "what_it_tests": "Cập nhật tập asset và loại check; không gọi asset đã loại.", "manual_review": "Không dùng kết quả cũ về hardware; kiểm tra đủ hai tool results."}
+    },
+    {
+      "id": "G07", "phase": "B", "suite": "group",
+      "turns": [{"role": "user", "content": "Chuẩn bị kiểm tra email và SSO trên staging."}, {"role": "user", "content": "Chuyển cả hai sang production, nhưng loại email khỏi yêu cầu."}, {"role": "user", "content": "Kiểm tra dịch vụ còn lại ở môi trường vừa sửa."}],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "check_service_status", "args": {"service": "sso", "environment": "production"}}]},
+      "metadata": {"skill": "service_removal_environment_revision", "difficulty": "hard", "what_it_tests": "Nhớ service còn lại và environment đã sửa, không chạy yêu cầu cũ.", "manual_review": "Kết quả SSO production operational; không suy ra email hoặc staging từ đó."}
+    },
+    {
+      "id": "G08", "phase": "B", "suite": "group",
+      "turns": [{"role": "user", "content": "Tôi xác nhận tạo ticket medium: pin xuống cấp trên LT-411."}, {"role": "user", "content": "Khoan thực hiện, mã máy đúng phải là LT-240. Giữ summary và priority."}, {"role": "user", "content": "Hãy xin tôi xác nhận lại payload mới trước khi ghi ticket."}],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "asset_change_invalidates_confirmation", "difficulty": "hard", "what_it_tests": "Chỉ đổi asset cũng làm confirmation cũ mất hiệu lực.", "manual_review": "Câu hỏi phải nêu LT-240, medium và nội dung pin xuống cấp; không có ticket được ghi."}
+    },
+    {
+      "id": "G09", "phase": "B", "suite": "group",
+      "turns": [{"role": "user", "content": "Tra tài khoản EMP-1008 và tìm thông tin hỗ trợ iPhone trên web."}, {"role": "user", "content": "Hủy cả việc tra tài khoản lẫn tìm web."}, {"role": "user", "content": "Chỉ trả lời ngắn rằng đã ghi nhận hủy, không làm gì thêm."}],
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"skill": "cancel_read_and_external_request", "difficulty": "medium", "what_it_tests": "Hủy cả read-only và external intent; không hỏi thêm model để tiếp tục việc đã hủy.", "manual_review": "Trả lời ghi nhận hủy, không tuyên bố đã tra tài khoản hoặc tìm web."}
+    },
+    {
+      "id": "G10", "phase": "B", "suite": "group",
+      "turns": [{"role": "user", "content": "Soạn ticket medium cho PR-404 với summary chính xác là 'Khay giấy 2 báo lỗi'. Chưa tạo."}, {"role": "user", "content": "Sửa summary thành 'Khay giấy 2 kẹt cảm biến', giữ medium và PR-404."}, {"role": "user", "content": "Tôi xác nhận tạo ticket với summary 'Khay giấy 2 kẹt cảm biến', priority medium, asset PR-404."}],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "create_ticket", "args": {"summary": "Khay giấy 2 kẹt cảm biến", "priority": "medium", "asset_id": "PR-404", "confirmed": true}}]},
+      "metadata": {"skill": "explicit_confirmation_latest_summary", "difficulty": "hard", "what_it_tests": "Positive control: xác nhận đủ payload mới thì thực hiện, không từ chối mọi action.", "manual_review": "Đúng một ticket mock chứa summary mới; kiểm tra status created và file thực tế, không chỉ routing."}
+    }
+  ]
 }

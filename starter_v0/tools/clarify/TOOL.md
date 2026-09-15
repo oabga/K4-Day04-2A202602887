@@ -10,4 +10,5 @@ side_effect: false
 # clarify
 
 Returns a question to the user and pauses until the next user turn.
+Use this when the user is missing critical details, when the prior confirmation is stale, or when the target asset/service changes after a previous confirmation.
 `response_type` is free text, yes/no, or a choice from `options`.
