@@ -63,7 +63,7 @@ def main() -> None:
     paced = PacedProvider()
     ticket_module = importlib.import_module('tools.create_ticket.tool')
     suites = ['adversarial', 'group'] if args.suite == 'both' else [args.suite]
-    evidence = ROOT / 'artifacts' / 'eval_evidence'
+    evidence = ROOT / 'runs'
     evidence.mkdir(parents=True, exist_ok=True)
     for suite in suites:
         with tempfile.TemporaryDirectory(prefix='helpdesk-redteam-') as temporary:

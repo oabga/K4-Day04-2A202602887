@@ -1,9 +1,0 @@
-{
-  "generated_at": "2026-09-14T12:35:53.587820+00:00",
-  "interval_seconds": 15.0,
-  "run_file": "v0_B_adversarial_gemini_20260914T193553571518.json",
-  "suite": "adversarial",
-  "tickets": [],
-  "temporary_ticket_count": 0,
-  "temporary_directory_removed": true
-}

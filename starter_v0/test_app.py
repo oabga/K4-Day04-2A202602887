@@ -1,6 +1,9 @@
 import unittest
+from unittest.mock import Mock, patch
 
 from app import PROVIDER_NAME, SYSTEM_PROMPT_PATH, TOOLS_PATH, new_transcript
+from chat import run_model_tool_loop
+from providers.base import ModelResponse, ToolCall
 from streamlit.testing.v1 import AppTest
 from tools import TOOL_FUNCTIONS, load_tool_declarations
 from versioning import build_artifact_version
@@ -21,6 +24,8 @@ class AppTranscriptTest(unittest.TestCase):
 
         self.assertFalse(page.exception)
         self.assertEqual(page.title[0].value, 'IT Helpdesk Agent')
+        self.assertEqual(len(page.text_input), 1)
+        self.assertEqual(page.text_input[0].label, 'OpenRouter model')
 
     def test_ui_tools_match_registry(self) -> None:
         declared = {item['name'] for item in load_tool_declarations(TOOLS_PATH)}
@@ -34,7 +39,30 @@ class AppTranscriptTest(unittest.TestCase):
             TOOL_FUNCTIONS['search_device_info']('Lenovo', 'LT-318', 'drivers', 2)['error'],
             'restricted_internal_identifier',
         )
+        diagnostic = TOOL_FUNCTIONS['network_diagnostic'](145, 8, True)
+        self.assertEqual(diagnostic['status'], 'degraded')
+        self.assertEqual(diagnostic['findings'], ['packet_loss_high', 'latency_high'])
+        self.assertEqual(TOOL_FUNCTIONS['network_diagnostic'](-1, 0, True)['error'], 'invalid_metrics')
 
+    def test_ui_executes_native_clarify_call(self) -> None:
+        provider = Mock()
+        provider.complete.return_value = ModelResponse(tool_calls=[ToolCall(
+            name='clarify',
+            args={'question': 'Please provide the asset ID.', 'response_type': 'text'},
+        )])
+
+        with patch.dict(TOOL_FUNCTIONS, {'clarify': TOOL_FUNCTIONS['clarify']}):
+            result = run_model_tool_loop(
+                provider=provider,
+                messages=[{'role': 'user', 'content': 'Check Wi-Fi on my laptop.'}],
+                tools=[],
+                model='test/model',
+                max_tool_rounds=1,
+            )
+
+        self.assertEqual(result['status'], 'waiting_for_user')
+        self.assertEqual(result['tool_events'][0]['tool'], 'clarify')
+        self.assertEqual(result['tool_events'][0]['args']['response_type'], 'text')
 
 if __name__ == '__main__':
     unittest.main()
