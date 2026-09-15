@@ -135,16 +135,16 @@ có thể đối chiếu đóng góp.
 
 Sao chép mẫu dưới đây cho từng thành viên:
 
-### Họ tên — MSSV
+### Dương Minh Hiếu — 2A202602488
 
-- **Vai trò/phần việc được nhận:**
-- **Những gì tôi đã thay đổi trong repo chung:**
-- **File hoặc artifact liên quan:**
-- **Commit hash hoặc pull request:**
-- **Một quyết định kỹ thuật tôi đã đưa ra và lý do:**
-- **Khó khăn tôi gặp và cách tôi xử lý:**
-- **Điều tôi học được từ phần việc này:**
-- **Nếu làm lại, tôi sẽ cải thiện điều gì:**
+- **Vai trò/phần việc được nhận:** Làm phần tối ưu hóa routing và guardrails cho agent, tập trung vào phần kiểm thử group/adversarial và xử lý lỗi fail cases.
+- **Những gì tôi đã thay đổi trong repo chung:** Tôi đã sửa các rule routing trong `system_prompt.md`, làm rõ schema của `search_kb` và `policy`, và thêm fallback logic trong `agent.py` để chặn stale confirmation, role spoofing, pseudo-code `create_ticket({... confirmed: true})` và external identifier smuggling. Tôi cũng chạy lại các suite eval để chứng minh cải thiện.
+- **File hoặc artifact liên quan:** `starter_v0/agent.py`, `starter_v0/artifacts/system_prompt.md`, `starter_v0/artifacts/tools.yaml`, `starter_v0/runs/v0_openrouter_fix4_B_group_openrouter_20260914T194927414616.json`, `starter_v0/runs/v0_openrouter_fix6_B_adversarial_openrouter_20260914T195304007399.json`.
+- **Commit hash hoặc pull request:** Commit `4478aa1` (`Improve agent routing and adversarial guardrails`), branch `duongminhhieu`, đã push lên remote `origin/duongminhhieu`.
+- **Một quyết định kỹ thuật tôi đã đưa ra và lý do:** Tôi quyết định tập trung vào routing và boundary rules thay vì đổi provider liên tục. Vì fail thực tế là do tool selection/confirmation boundary, nên việc cải thiện prompt/tool schema và thêm soft guardrails cho stale confirmation mang lại hiệu quả rõ rệt mà không phá vỡ toàn bộ hệ thống.
+- **Khó khăn tôi gặp và cách tôi xử lý:** Ban đầu OpenAI hết quota nên không thể đo được kết quả thật. Sau đó tôi chuyển sang OpenRouter và phát hiện fail còn lại ở G03, rồi từng bước fix các case adversarial còn lại. Tôi sử dụng dữ liệu từ run eval làm evidence để xác định root cause, không sửa theo cảm tính.
+- **Điều tôi học được từ phần việc này:** Tôi học cách phân biệt giữa provider (OpenRouter/OpenAI/Gemini), model (gpt-4o-mini, Gemini...) và tool routing logic. Việc bảo vệ agent không chỉ là prompt đẹp, mà còn phải kiểm soát confirmation, tool schema, boundary và external data leakage.
+- **Nếu làm lại, tôi sẽ cải thiện điều gì:** Tôi sẽ chuẩn hóa thêm quá trình versioning và lưu rõ artifact cho từng vòng cải tiến, đồng thời tạo file `TEAMMATES.md` và danh sách contribution rõ ràng hơn để báo cáo dễ đối chiếu hơn.
 
 Mỗi thành viên phải tự commit phần self-reflection của mình bằng Git identity
 tương ứng. Reflection phải dẫn đến contribution artifact/commit đã nêu ở trên,
