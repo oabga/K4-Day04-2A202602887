@@ -262,14 +262,14 @@ không dùng chính phần reflection làm bằng chứng duy nhất cho đóng 
 
 ### Lê Gia Bảo — 2A202602887
 
-- **Vai trò/phần việc được nhận:**
-- **Những gì tôi đã thay đổi trong repo chung:**
-- **File hoặc artifact liên quan:**
-- **Commit hash hoặc pull request:**
-- **Một quyết định kỹ thuật tôi đã đưa ra và lý do:**
-- **Khó khăn tôi gặp và cách tôi xử lý:**
-- **Điều tôi học được từ phần việc này:**
-- **Nếu làm lại, tôi sẽ cải thiện điều gì:**
+- **Vai trò/phần việc được nhận:** B — Tool & Schema Engineer
+- **Những gì tôi đã thay đổi trong repo chung:** Viết lại description/enum/`required` trong `tools.yaml`; siết `lookup_user` one-call; ghi v2/v3 vào `version_log.csv`; copy run OpenAI vào `artifacts/eval_evidence/`; `TEAMMATES.md`.
+- **File hoặc artifact liên quan:** `starter_v0/artifacts/tools.yaml`, `version_log.csv`, `eval_evidence/v2_*.json`, `v3_*.json`, transcript lookup EMP-1003
+- **Commit hash hoặc pull request:** `c79c214` (YAML v2), `8db0170` (YAML v3 + log), `4a9fce0` (`TEAMMATES.md`)
+- **Một quyết định kỹ thuật tôi đã đưa ra và lý do:** Không đổi tên tool (eval/registry sẽ vỡ). Chỉ sửa declaration; implementation Tavily/`create_ticket` đã có guardrail.
+- **Khó khăn tôi gặp và cách tôi xử lý:** Gemini 401/429 và nhầm key OpenRouter; chuyển OpenAI. v0 Gemini không đủ `measured_cases`. Conflict merge A: giữ YAML, lấy prompt.
+- **Điều tôi học được từ phần việc này:** Schema là một phần prompt; extra call cùng tên tool vẫn FAIL. Metric + hash mới là evidence.
+- **Nếu làm lại, tôi sẽ cải thiện điều gì:** Tách v1 routing / v2 enum thành hai lần sửa YAML; chạy adversarial trên đúng v3 trước khi nộp.
 
 ### Dương Minh Hiếu — 2A202602488
 
